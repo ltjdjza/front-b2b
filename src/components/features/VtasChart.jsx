@@ -26,7 +26,7 @@ const VtasChart = ({ startDate, endDate, categories, data }) => {
       dataLabels: {
         enabled: true,
         formatter: function (val) {
-          return val + "%";
+          return val ;
         },
         offsetY: -20,
         style: {
@@ -70,7 +70,7 @@ const VtasChart = ({ startDate, endDate, categories, data }) => {
         labels: {
           show: false,
           formatter: function (val) {
-            return val + "%";
+            return val;
           },
         },
       },

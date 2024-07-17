@@ -11,3 +11,15 @@ export const getAmazonOrders = async (params) => {
     return [];
   }
 };
+
+export const getAmazonVtasPorSku = async (params) => {
+    try {
+      const { data } = await axios.get("http://localhost:8000/api/v1/amazon/ventasporsku", {
+        params,
+      });
+      return data;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };

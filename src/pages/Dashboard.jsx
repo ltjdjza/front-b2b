@@ -7,8 +7,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import VtasChart from "../components/features/VtasChart";
 import { formatDate, withLoader } from "../utils/helpers";
-import { getAmazonOrders } from "../services/AmazonOrdersServices";
+import {
+  getAmazonOrders,
+  getAmazonVtasPorSku,
+} from "../services/AmazonOrdersServices";
 import io from "socket.io-client";
+import VtasPorSkuChart from "../components/features/VtasPorSkuChart";
 
 const socket = io("http://localhost:8000");
 
@@ -24,11 +28,12 @@ const Dashboard = () => {
   const [page, setPage] = useState(1); //pagina actual
   const [totalPages, setTotalPages] = useState(1); //total de paginas que se traduce como el total de ventas
   const [total, setTotal] = useState(0); //total de ventas
+  const [vtasPorSku, setVtasPorSku] = useState([]); //ventas por sku
 
   const [params, setParams] = useState({
     startDate: "",
     endDate: "",
-    filters: "",
+    filters: "order_status:paid",
     sortField: "order_status",
     sortOrder: "asc",
     limit,
@@ -46,10 +51,12 @@ const Dashboard = () => {
   useEffect(() => {
     //traer las ventas de amazon
     fetchAmazonOrders();
+    fetchVtasPorSku();
     //Escuchar mensajes del backend
     socket.on("newOrder", (data) => {
       console.log(data);
       fetchAmazonOrders();
+      fetchVtasPorSku();
     });
 
     //Limpiar efecto
@@ -64,6 +71,16 @@ const Dashboard = () => {
     setVentas(data.orders);
     setTotalPages(data.totalPages);
     setTotal(data.total);
+  };
+
+  const fetchVtasPorSku = async () => {
+    const data = await withLoader(getAmazonVtasPorSku({
+        startDate: formatDate(fechaInicial),
+        endDate: formatDate(fechaFinal),
+        
+    }));
+    console.log(data);
+    setVtasPorSku(data);
   };
 
   return (
@@ -142,8 +159,7 @@ const Dashboard = () => {
         </Grid2>
         <Grid2 xs={4}>
           <Box sx={{ textAlign: "center", padding: 0 }}>
-            <h2>Productos Mas Vendidos</h2>
-            <p>1000</p>
+            <VtasPorSkuChart />
           </Box>
         </Grid2>
       </Grid2>
