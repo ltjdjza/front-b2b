@@ -1,5 +1,5 @@
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const MySwal = withReactContent(Swal);
 
@@ -17,7 +17,7 @@ export const formatDate = (date) => {
   return [year, month, day].join("-");
 };
 
-//funcion asyncrona que recibe una funcion y la ejecuta 
+//funcion asyncrona que recibe una funcion y la ejecuta
 export const withLoader = async (functionToExecute) => {
   try {
     loader();
@@ -40,4 +40,12 @@ export const loader = () => {
       MySwal.showLoading();
     },
   });
+};
+
+//funcion que recibe un un numero y lo formatea a moneda pesos mexicanos
+export const formatMoney = (number) => {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+  }).format(number);
 };

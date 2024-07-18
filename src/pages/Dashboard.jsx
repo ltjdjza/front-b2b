@@ -1,4 +1,4 @@
-import { Container } from "@mui/material";
+import { Container, Tab, Table } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { Box } from "@mui/system";
 import { useEffect, useState } from "react";
@@ -10,9 +10,19 @@ import { formatDate, withLoader } from "../utils/helpers";
 import {
   getAmazonOrders,
   getAmazonVtasPorSku,
+  getAmazonVtasPorSkuPagi,
 } from "../services/AmazonOrdersServices";
 import io from "socket.io-client";
 import VtasPorSkuChart from "../components/features/VtasPorSkuChart";
+import TableVtas from "../components/features/TableVtas";
+
+import {
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+} from "@mui/material";
 
 const socket = io("http://localhost:8000");
 
@@ -26,9 +36,11 @@ const Dashboard = () => {
   const [ventas, setVentas] = useState([]); //VENTAS
   const [limit, setLimit] = useState(10); //limite de ventas por pagina
   const [page, setPage] = useState(1); //pagina actual
-  const [totalPages, setTotalPages] = useState(1); //total de paginas que se traduce como el total de ventas
+  const [totalPages, setTotalPages] = useState(1); //total de paginas
   const [total, setTotal] = useState(0); //total de ventas
   const [vtasPorSku, setVtasPorSku] = useState([]); //ventas por sku
+  const [totalVentasAmazon, setTotalVentasAmazon] = useState(0); //total de ventas de amazon
+  const [vtasPorSkuPagi, setVtasPorSkuPagi] = useState([]); //ventas por sku paginadas
 
   const [params, setParams] = useState({
     startDate: "",
@@ -52,17 +64,20 @@ const Dashboard = () => {
     //traer las ventas de amazon
     fetchAmazonOrders();
     fetchVtasPorSku();
+    fetchVtasPorSkuPagi();
     //Escuchar mensajes del backend
     socket.on("newOrder", (data) => {
       console.log(data);
       fetchAmazonOrders();
       fetchVtasPorSku();
+      fetchVtasPorSkuPagi();
     });
 
     //Limpiar efecto
     return () => {
       socket.off("newOrder");
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fechaFinal, fechaInicial, page, limit]);
 
   const fetchAmazonOrders = async () => {
@@ -71,16 +86,31 @@ const Dashboard = () => {
     setVentas(data.orders);
     setTotalPages(data.totalPages);
     setTotal(data.total);
+    setTotalVentasAmazon(data.totalVentas);
   };
 
   const fetchVtasPorSku = async () => {
-    const data = await withLoader(getAmazonVtasPorSku({
+    const data = await withLoader(
+      getAmazonVtasPorSku({
         startDate: formatDate(fechaInicial),
         endDate: formatDate(fechaFinal),
-        
-    }));
+      })
+    );
     console.log(data);
     setVtasPorSku(data);
+  };
+
+  const fetchVtasPorSkuPagi = async () => {
+    const data = await withLoader(
+      getAmazonVtasPorSkuPagi({
+        startDate: formatDate(fechaInicial),
+        endDate: formatDate(fechaFinal),
+        limit,
+        page,
+      })
+    );
+    console.log(data);
+    setVtasPorSkuPagi(data);
   };
 
   return (
@@ -99,7 +129,6 @@ const Dashboard = () => {
               label="Fecha Inicial"
               value={fechaInicial}
               onChange={(newValue) => {
-                console.log(newValue);
                 setFechaInicial(newValue);
                 console.log(formatDate(newValue));
                 setParams({
@@ -112,7 +141,6 @@ const Dashboard = () => {
               label="Fecha Final"
               value={fechaFinal}
               onChange={(newValue) => {
-                console.log(newValue);
                 setFechaFinal(newValue);
                 console.log(formatDate(newValue));
                 setParams({
@@ -148,18 +176,60 @@ const Dashboard = () => {
       {/* Grid 2 */}
       <Grid2 container spacing={2} sx={{ alignItems: "center" }}>
         <Grid2 xs={8}>
-          <Box sx={{ textAlign: "center", padding: 0 }}>
-            <VtasChart
-              startDate={formatDate(fechaInicial)}
-              endDate={formatDate(fechaFinal)}
-              categories={marketPlaces}
-              data={[total, 0, 0, 0, 0]}
-            />
-          </Box>
+          {total && (
+            <Box sx={{ textAlign: "center", padding: 0 }}>
+              <VtasChart
+                startDate={formatDate(fechaInicial)}
+                endDate={formatDate(fechaFinal)}
+                categories={marketPlaces}
+                data={[totalVentasAmazon, 0, 0, 0, 0]}
+              />
+            </Box>
+          )}
         </Grid2>
         <Grid2 xs={4}>
           <Box sx={{ textAlign: "center", padding: 0 }}>
-            <VtasPorSkuChart />
+            <VtasPorSkuChart ventasPorSku={vtasPorSku} />
+          </Box>
+        </Grid2>
+      </Grid2>
+      {/* Grid 3 */}
+      <Grid2 container spacing={2} sx={{ alignItems: "center" }}>
+        <Grid2 xs={6}>
+          {vtasPorSku && (
+            <Box sx={{ textAlign: "center", padding: 0 }}>
+              <Container maxWidth="xxl">
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>SKU</TableCell>
+                        <TableCell>Piezas Vendidas</TableCell>
+                        <TableCell>Ticket Promedio</TableCell>
+                        <TableCell>Total Ventas</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {vtasPorSku?.map((row) => (
+                        <TableRow key={row.sku}>
+                          <TableCell>{row.sku}</TableCell>
+                          <TableCell>{row.piezasVendidas}</TableCell>
+                          <TableCell>{
+                            row.ticketPromedio.toFixed(2)
+                            }</TableCell>
+                          <TableCell>{row.totalVentas}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Container>
+            </Box>
+          )}
+        </Grid2>
+        <Grid2 xs={6}>
+          <Box sx={{ textAlign: "center", padding: 0 }}>
+            <h2>Ventas</h2>
           </Box>
         </Grid2>
       </Grid2>

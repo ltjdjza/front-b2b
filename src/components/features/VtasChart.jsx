@@ -1,5 +1,6 @@
 import ReactApexChart from "react-apexcharts";
 import PropTypes from "prop-types";
+import { formatMoney } from "../../utils/helpers";
 
 const VtasChart = ({ startDate, endDate, categories, data }) => {
   //configuracion de la grafica
@@ -7,7 +8,7 @@ const VtasChart = ({ startDate, endDate, categories, data }) => {
     series: [
       {
         name: "Ventas",
-        data: data?data:[0],
+        data: data ? data : [0],
       },
     ],
     options: {
@@ -26,7 +27,8 @@ const VtasChart = ({ startDate, endDate, categories, data }) => {
       dataLabels: {
         enabled: true,
         formatter: function (val) {
-          return val ;
+          let valFormated = formatMoney(val);
+          return valFormated;
         },
         offsetY: -20,
         style: {
@@ -36,7 +38,7 @@ const VtasChart = ({ startDate, endDate, categories, data }) => {
       },
 
       xaxis: {
-        categories: categories?categories:[""],
+        categories: categories ? categories : [""],
         position: "top",
         axisBorder: {
           show: false,
@@ -57,7 +59,7 @@ const VtasChart = ({ startDate, endDate, categories, data }) => {
           },
         },
         tooltip: {
-          enabled: true,
+          enabled: false,
         },
       },
       yaxis: {
