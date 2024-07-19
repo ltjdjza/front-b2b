@@ -1,4 +1,4 @@
-import { Container, Tab, Table } from "@mui/material";
+import { Container } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { Box } from "@mui/system";
 import { useEffect, useState } from "react";
@@ -23,8 +23,7 @@ const Dashboard = () => {
   const [fechaInicial, setFechaInicial] = useState(
     dayjs().subtract(1, "month")
   );
-  //fecha final hoy
-  const [fechaFinal, setFechaFinal] = useState(dayjs());
+  const [fechaFinal, setFechaFinal] = useState(dayjs()); //fecha final hoy
   const [ventas, setVentas] = useState([]); //VENTAS
   const [limit, setLimit] = useState(10); //limite de ventas por pagina
   const [page, setPage] = useState(1); //pagina actual
@@ -76,7 +75,6 @@ const Dashboard = () => {
 
   const fetchAmazonOrders = async () => {
     const data = await withLoader(getAmazonOrders(params));
-    console.log(data);
     setVentas(data.orders);
     setTotalPages(data.totalPages);
     setTotal(data.total);

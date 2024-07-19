@@ -15,18 +15,18 @@ import { ArrowUpward, ArrowDownward } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 
 const TableVtas = (props) => {
-  const { ventasPorSKU, marketplace, onSkuSelected } = props;
+  const { ventasPorSKU, marketplace, onSkuSelected } = props;//arreglo de ventas por sku
   const [sortConfig, setSortConfig] = useState({
     key: "sku",
     direction: "asc",
-  });
-  const [searchText, setSearchText] = useState("");
-  const [filteredVentas, setFilteredVentas] = useState([]);
+  });//para intercambiar la direccion de la fecha del sorter
+  const [searchText, setSearchText] = useState("");//sku a buscar
+  const [filteredVentas, setFilteredVentas] = useState([]);//ventasporskufiltradas
 
   const handleSearchChange = (event) => {
-    setSearchText(event.target.value);
+    setSearchText(event.target.value);//se le asigna valor al campo de texto
 
-    if (event.target.value === "") {
+    if (event.target.value === "") {//si el campo esta vacio limpian las ventas filtradas
       setFilteredVentas([]);
     }
   };
@@ -34,7 +34,6 @@ const TableVtas = (props) => {
   const handleSort = (key) => {
     //limpiar el search text
     setSearchText("");
-    console.log(key);
     const direction =
       sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
     setSortConfig({ key, direction });
@@ -144,8 +143,8 @@ const TableVtas = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredVentas.length > 0 && searchText.length > 0
-              ? filteredVentas.map((row) => (
+            {filteredVentas?.length > 0 && searchText.length > 0
+              ? filteredVentas?.map((row) => (
                   <TableRow
                     key={row.sku}
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -168,7 +167,7 @@ const TableVtas = (props) => {
                     </TableCell>
                   </TableRow>
                 ))
-              : ventasPorSKU.map((row) => (
+              : ventasPorSKU?.map((row) => (
                   <TableRow
                     key={row.sku}
                     sx={{ "&:last-child td, &:last-child th": { border: 0 }, cursor: "pointer" }}

@@ -1,9 +1,12 @@
 import ReactApexChart from "react-apexcharts";
 import { getAmazonVtasPorSkuSemanal } from "../../services/AmazonOrdersServices";
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+
 const VtasPorSkuSemanal = ({ sku }) => {
   //const [sku, setSku] = useState("bici-az");
   const [data, setData] = useState([]);
+
   const [series, setSeries] = useState([
     {
       name: "Total Ventas",
@@ -56,8 +59,8 @@ const VtasPorSkuSemanal = ({ sku }) => {
 
   const fetchVtasPorSkuSemanal = async () => {
     const response = await getAmazonVtasPorSkuSemanal({
-      startDate: "2024-07-10",
-      endDate: "2024-07-16",
+      startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 7 dias antes
+      endDate: new Date().toISOString().split("T")[0],
       sku,
     });
     return response;
@@ -90,6 +93,7 @@ const VtasPorSkuSemanal = ({ sku }) => {
       ...prevOptions,
       xaxis: { ...prevOptions.xaxis, categories: categories },
     }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sku]);
 
   return (
@@ -98,6 +102,10 @@ const VtasPorSkuSemanal = ({ sku }) => {
       <ReactApexChart options={options} series={series} type="line" />
     </div>
   );
+};
+
+VtasPorSkuSemanal.propTypes = {
+  sku: PropTypes.string,
 };
 
 export default VtasPorSkuSemanal;
