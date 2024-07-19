@@ -1,9 +1,11 @@
 import axios from "axios";
 
+const apiURL = import.meta.env.VITE_API_AMAZON_URL;
+
 export const getAmazonOrders = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v1/amazon/orders",
+      `${apiURL}/api/v1/amazon/orders`,
       {
         params,
       }
@@ -18,7 +20,7 @@ export const getAmazonOrders = async (params) => {
 export const getAmazonVtasPorSku = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v6/amazon/ventasporsku",
+      `${apiURL}/api/v6/amazon/ventasporsku`,
       {
         params,
       }
@@ -33,7 +35,7 @@ export const getAmazonVtasPorSku = async (params) => {
 export const getAmazonVtasPorSkuSemanal = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v2/amazon/ventasporsku/semanal",
+      `${apiURL}/api/v2/amazon/ventasporsku/semanal`,
       {
         params,
       }

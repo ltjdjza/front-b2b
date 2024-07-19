@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
 const VtasPorSkuSemanal = ({ sku }) => {
-  //const [sku, setSku] = useState("bici-az");
   const [data, setData] = useState([]);
 
   const [series, setSeries] = useState([
@@ -57,17 +56,18 @@ const VtasPorSkuSemanal = ({ sku }) => {
     },
   });
 
-  const fetchVtasPorSkuSemanal = async () => {
+  const fetchVtasPorSkuSemanal = async (newSku) => {
     const response = await getAmazonVtasPorSkuSemanal({
       startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 7 dias antes
       endDate: new Date().toISOString().split("T")[0],
-      sku,
+      sku: newSku,
     });
+    console.log(response);
     return response;
   };
 
   useEffect(() => {
-    fetchVtasPorSkuSemanal().then((data) => {
+    fetchVtasPorSkuSemanal(sku).then((data) => {
       setData(data);
     });
     const categories = Object.keys(data);

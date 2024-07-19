@@ -1,11 +1,11 @@
 import axios from "axios";
 
-const apiURL = import.meta.env.VITE_API_ELENAS_URL;
+const apiURL = import.meta.env.VITE_API_ELEKTRA_URL;
 
-export const getElenasOrders = async (params) => {
+export const getElektraOrders = async (params) => {
   try {
     const { data } = await axios.get(
-      `${apiURL}/api/v1/elenas/orders`,
+      `${apiURL}/api/v1/elektra/orders`,
       {
         params,
       }
@@ -17,10 +17,10 @@ export const getElenasOrders = async (params) => {
   }
 };
 
-export const getElenasVtasPorSku = async (params) => {
+export const getElektraVtasPorSku = async (params) => {
   try {
     const { data } = await axios.get(
-      `${apiURL}/api/v1/elenas/ventasporsku`,
+      `${apiURL}/api/v1/elektra/ventasporsku`,
       {
         params,
       }
@@ -32,10 +32,10 @@ export const getElenasVtasPorSku = async (params) => {
   }
 };
 
-export const getElenasVtasPorSkuSemanal = async (params) => {
+export const getElektraVtasPorSkuSemanal = async (params) => {
   try {
     const { data } = await axios.get(
-      `${apiURL}/api/v1/elenas/ventasporsku/semanal`,
+      `${apiURL}/api/v1/elektra/ventasporsku/semanal`,
       {
         params,
       }

@@ -1,9 +1,11 @@
 import axios from "axios";
 
-export const getElecktraOrders = async (params) => {
+const apiURL = import.meta.env.VITE_API_MELI_URL;
+
+export const getMeliOrders = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v1/elecktra/orders",
+      `${apiURL}/api/v1/meli/orders`,
       {
         params,
       }
@@ -15,10 +17,10 @@ export const getElecktraOrders = async (params) => {
   }
 };
 
-export const getElecktraVtasPorSku = async (params) => {
+export const getMeliVtasPorSku = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v1/elecktra/ventasporsku",
+      `${apiURL}/api/v2/meli/ventasporsku`,
       {
         params,
       }
@@ -30,10 +32,10 @@ export const getElecktraVtasPorSku = async (params) => {
   }
 };
 
-export const getElecktraVtasPorSkuSemanal = async (params) => {
+export const getMeliVtasPorSkuSemanal = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v1/elecktra/ventasporsku/semanal",
+      `${apiURL}/api/v1/meli/ventasporsku/semanal`,
       {
         params,
       }

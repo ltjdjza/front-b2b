@@ -15,8 +15,15 @@ import io from "socket.io-client";
 import VtasPorSkuChart from "../components/features/VtasPorSkuChart";
 import TableVtas from "../components/common/TableVtas";
 import VtasPorSkuSemanal from "../components/features/VtasPorSkuSemanal";
+import { getElektraOrders } from "../services/ElektraOrdersServices";
+import { getElenasOrders } from "../services/ElenasOrdersServices";
+import { getMeliOrders, getMeliVtasPorSku } from "../services/MeliOrdersServices";
+import TableVtasMeli from "../components/features/TableVtasMeli";
 
 const socket = io("http://localhost:8000");
+const socket2 = io("http://localhost:8001");
+const socketElenas = io(import.meta.env.VITE_ELENAS_URL);
+const socketMeli = io(import.meta.env.VITE_MELI_URL);
 
 const Dashboard = () => {
   //fecha inicial un mes atras
@@ -33,9 +40,26 @@ const Dashboard = () => {
   const [totalVentasAmazon, setTotalVentasAmazon] = useState(0); //total de ventas de amazon
   const [skuSelected, setSkuSelected] = useState(""); //sku seleccionado
 
+  const [ventasElektra, setVentasElektra] = useState([]); //VENTAS
+  const [totalPagesElektra, setTotalPagesElektra] = useState(1); //total de paginas
+  const [totalElektra, setTotalElektra] = useState(0); //total de ventas
+  const [totalVentasElektra, setTotalVentasElektra] = useState(0); //total de ventas de amazon
+
+  const [ventasElenas, setVentasElenas] = useState([]); //VENTAS
+  const [totalPagesElenas, setTotalPagesElenas] = useState(1); //total de paginas
+  const [totalElenas, setTotalElenas] = useState(0); //total de ventas
+  const [totalVentasElenas, setTotalVentasElenas] = useState(0); //total de ventas de amazon
+
+  const [ventasMeli, setVentasMeli] = useState([]); //VENTAS
+  const [totalPagesMeli, setTotalPagesMeli] = useState(1); //total de paginas
+  const [totalMeli, setTotalMeli] = useState(0); //total de ventas
+  const [totalVentasMeli, setTotalVentasMeli] = useState(0); //total de ventas de amazon
+  const [ventasPorSKUMeli, setVentasPorSKUMeli] = useState([]); //ventas por sku
+
+
   const [params, setParams] = useState({
-    startDate: "",
-    endDate: "",
+    startDate: formatDate(fechaInicial),
+    endDate: formatDate(fechaFinal),
     filters: "order_status:paid",
     sortField: "order_status",
     sortOrder: "asc",
@@ -49,16 +73,20 @@ const Dashboard = () => {
 
   const marketPlaces = [
     "Amazon",
-    "Ebay",
-    "Shopify",
+    "Elektra",
+    "Elenas",
+    "Meli",
     "Walmart",
-    "Mercado Libre",
   ]; //marketplaces para mostrar en la grafica
 
   useEffect(() => {
     //traer las ventas de amazon
     fetchAmazonOrders();
     fetchVentasPorSku();
+    fetchElektraOrders();
+    fetchElenasOrders();
+    fetchMeliOrders();
+    fetchVentasPorSkuMeli();
     //Escuchar mensajes del backend
     socket.on("newOrder", (data) => {
       console.log(data);
@@ -66,12 +94,30 @@ const Dashboard = () => {
       fetchVentasPorSku();
     });
 
+    socket2.on("newOrder", (data) => {
+      console.log(data);
+      fetchElektraOrders();
+    });
+
+    socketElenas.on("newOrder", (data) => {
+      console.log(data);
+      fetchElenasOrders();
+    });
+
+    socketMeli.on("newOrder", (data) => {
+      console.log(data);
+      fetchMeliOrders();
+    });
+
     //Limpiar efecto
     return () => {
       socket.off("newOrder");
+      socket2.off("newOrder");
+      socketElenas.off("newOrder");
+      socketMeli.off("newOrder");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fechaFinal, fechaInicial, page, limit]);
+  }, [fechaFinal, fechaInicial]);
 
   const fetchAmazonOrders = async () => {
     const data = await withLoader(getAmazonOrders(params));
@@ -79,6 +125,50 @@ const Dashboard = () => {
     setTotalPages(data.totalPages);
     setTotal(data.total);
     setTotalVentasAmazon(data.totalVentas);
+  };
+
+  const fetchElektraOrders = async () => {
+    const data = await getElektraOrders(params);
+    console.log(data);
+    setVentasElektra(data.orders);
+    setTotalPagesElektra(data.totalPages);
+    setTotalElektra(data.total);
+    setTotalVentasElektra(data.totalVentas);
+  };
+
+  const fetchElenasOrders = async () => {
+    const data = await getElenasOrders({
+      startDate: params.startDate,
+      endDate: params.endDate,
+      filters: "status:Completed",
+      sortField: "status",
+      sortOrder: "asc",
+      limit,
+      page,
+    });
+    console.log(data);
+    setVentasElenas(data.orders);
+    setTotalPagesElenas(data.totalPages);
+    setTotalElenas(data.total);
+    setTotalVentasElenas(data.totalVentas);
+  };
+
+  const fetchMeliOrders = async () => {
+    const data = await getMeliOrders({
+      startDate: params.startDate,
+      endDate: params.endDate,
+      filters: "shipping_status:ready_to_ship",
+      sortField: "date",
+      sortOrder: "asc",
+      limit,
+      page,
+    });
+    console.log(params);
+    console.log(data);
+    setVentasMeli(data.orders);
+    setTotalPagesMeli(data.totalPages);
+    setTotalMeli(data.total);
+    setTotalVentasMeli(data.totalVentas);
   };
 
   const fetchVentasPorSku = async () => {
@@ -89,6 +179,17 @@ const Dashboard = () => {
       })
     );
     setVentasPorSKU(data.ventasPorSKU);
+  };
+
+  const fetchVentasPorSkuMeli = async () => {
+    const data = await withLoader(
+      getMeliVtasPorSku({
+        startDate: formatDate(fechaInicial),
+        endDate: formatDate(fechaFinal),
+      })
+    );
+    console.log(data.ventasPorSKU);
+    setVentasPorSKUMeli(data.ventasPorSKU);
   };
 
   return (
@@ -165,7 +266,7 @@ const Dashboard = () => {
                 startDate={formatDate(fechaInicial)}
                 endDate={formatDate(fechaFinal)}
                 categories={marketPlaces}
-                data={[totalVentasAmazon, 0, 0, 0, 0]}
+                data={[totalVentasAmazon, totalVentasElektra, totalVentasElenas, totalVentasMeli, 0]}
               />
             </Box>
           )}
@@ -188,6 +289,30 @@ const Dashboard = () => {
                 setFechaInicial={setFechaInicial}
                 setFechaFinal={setFechaFinal}
                 marketplace={"Amazon"}
+                sx={{ height: "100%" }}
+                onSkuSelected={selectSku}
+              />
+            </Box>
+          </Grid2>
+        )}
+        <Grid2 xs={4}>
+          <Box sx={{ textAlign: "center", padding: 0 }}>
+            <VtasPorSkuSemanal sku={skuSelected} />
+          </Box>
+        </Grid2>
+      </Grid2>
+      {/* Grid 4 */}
+      <Grid2 container spacing={2} sx={{ alignItems: "center" }}>
+        {ventasPorSKUMeli && (
+          <Grid2 xs={8}>
+            <Box sx={{ textAlign: "center", padding: 0 }}>
+              <TableVtasMeli
+                ventasPorSKUMeli={ventasPorSKUMeli}
+                fechaInicial={formatDate(fechaInicial)}
+                fechaFinal={formatDate(fechaFinal)}
+                setFechaInicial={setFechaInicial}
+                setFechaFinal={setFechaFinal}
+                marketplace={"Mercado libre"}
                 sx={{ height: "100%" }}
                 onSkuSelected={selectSku}
               />
