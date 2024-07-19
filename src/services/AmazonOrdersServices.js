@@ -18,7 +18,7 @@ export const getAmazonOrders = async (params) => {
 export const getAmazonVtasPorSku = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v1/amazon/ventasporsku",
+      "http://localhost:8000/api/v6/amazon/ventasporsku",
       {
         params,
       }
@@ -30,10 +30,10 @@ export const getAmazonVtasPorSku = async (params) => {
   }
 };
 
-export const getAmazonVtasPorSkuPagi = async (params) => {
+export const getAmazonVtasPorSkuSemanal = async (params) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8000/api/v3/amazon/ventasporsku",
+      "http://localhost:8000/api/v2/amazon/ventasporsku/semanal",
       {
         params,
       }
@@ -43,4 +43,4 @@ export const getAmazonVtasPorSkuPagi = async (params) => {
     console.error(error);
     return [];
   }
-};
+}

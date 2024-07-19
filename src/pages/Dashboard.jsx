@@ -10,19 +10,11 @@ import { formatDate, withLoader } from "../utils/helpers";
 import {
   getAmazonOrders,
   getAmazonVtasPorSku,
-  getAmazonVtasPorSkuPagi,
 } from "../services/AmazonOrdersServices";
 import io from "socket.io-client";
 import VtasPorSkuChart from "../components/features/VtasPorSkuChart";
-import TableVtas from "../components/features/TableVtas";
-
-import {
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-} from "@mui/material";
+import TableVtas from "../components/common/TableVtas";
+import VtasPorSkuSemanal from "../components/features/VtasPorSkuSemanal";
 
 const socket = io("http://localhost:8000");
 
@@ -38,9 +30,9 @@ const Dashboard = () => {
   const [page, setPage] = useState(1); //pagina actual
   const [totalPages, setTotalPages] = useState(1); //total de paginas
   const [total, setTotal] = useState(0); //total de ventas
-  const [vtasPorSku, setVtasPorSku] = useState([]); //ventas por sku
+  const [ventasPorSKU, setVentasPorSKU] = useState([]); //ventas por sku
   const [totalVentasAmazon, setTotalVentasAmazon] = useState(0); //total de ventas de amazon
-  const [vtasPorSkuPagi, setVtasPorSkuPagi] = useState([]); //ventas por sku paginadas
+  const [skuSelected, setSkuSelected] = useState(""); //sku seleccionado
 
   const [params, setParams] = useState({
     startDate: "",
@@ -51,6 +43,10 @@ const Dashboard = () => {
     limit,
     page,
   });
+
+  const selectSku = (sku) => {
+    setSkuSelected(sku);
+  };
 
   const marketPlaces = [
     "Amazon",
@@ -63,14 +59,12 @@ const Dashboard = () => {
   useEffect(() => {
     //traer las ventas de amazon
     fetchAmazonOrders();
-    fetchVtasPorSku();
-    fetchVtasPorSkuPagi();
+    fetchVentasPorSku();
     //Escuchar mensajes del backend
     socket.on("newOrder", (data) => {
       console.log(data);
       fetchAmazonOrders();
-      fetchVtasPorSku();
-      fetchVtasPorSkuPagi();
+      fetchVentasPorSku();
     });
 
     //Limpiar efecto
@@ -89,28 +83,14 @@ const Dashboard = () => {
     setTotalVentasAmazon(data.totalVentas);
   };
 
-  const fetchVtasPorSku = async () => {
+  const fetchVentasPorSku = async () => {
     const data = await withLoader(
       getAmazonVtasPorSku({
         startDate: formatDate(fechaInicial),
         endDate: formatDate(fechaFinal),
       })
     );
-    console.log(data);
-    setVtasPorSku(data);
-  };
-
-  const fetchVtasPorSkuPagi = async () => {
-    const data = await withLoader(
-      getAmazonVtasPorSkuPagi({
-        startDate: formatDate(fechaInicial),
-        endDate: formatDate(fechaFinal),
-        limit,
-        page,
-      })
-    );
-    console.log(data);
-    setVtasPorSkuPagi(data);
+    setVentasPorSKU(data.ventasPorSKU);
   };
 
   return (
@@ -120,7 +100,12 @@ const Dashboard = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          position: "sticky",
+          top: 0,
+          zIndex: 1000, //para que se vea por encima de los demas elementos
+          backgroundColor: "white",
         }}
+        id="dashboard"
       >
         <h1>Dashboard</h1>
         <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
@@ -189,47 +174,31 @@ const Dashboard = () => {
         </Grid2>
         <Grid2 xs={4}>
           <Box sx={{ textAlign: "center", padding: 0 }}>
-            <VtasPorSkuChart ventasPorSku={vtasPorSku} />
+            <VtasPorSkuChart ventasPorSku={ventasPorSKU} />
           </Box>
         </Grid2>
       </Grid2>
       {/* Grid 3 */}
       <Grid2 container spacing={2} sx={{ alignItems: "center" }}>
-        <Grid2 xs={6}>
-          {vtasPorSku && (
+        {ventasPorSKU && (
+          <Grid2 xs={8}>
             <Box sx={{ textAlign: "center", padding: 0 }}>
-              <Container maxWidth="xxl">
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>SKU</TableCell>
-                        <TableCell>Piezas Vendidas</TableCell>
-                        <TableCell>Ticket Promedio</TableCell>
-                        <TableCell>Total Ventas</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {vtasPorSku?.map((row) => (
-                        <TableRow key={row.sku}>
-                          <TableCell>{row.sku}</TableCell>
-                          <TableCell>{row.piezasVendidas}</TableCell>
-                          <TableCell>{
-                            row.ticketPromedio.toFixed(2)
-                            }</TableCell>
-                          <TableCell>{row.totalVentas}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Container>
+              <TableVtas
+                ventasPorSKU={ventasPorSKU}
+                fechaInicial={formatDate(fechaInicial)}
+                fechaFinal={formatDate(fechaFinal)}
+                setFechaInicial={setFechaInicial}
+                setFechaFinal={setFechaFinal}
+                marketplace={"Amazon"}
+                sx={{ height: "100%" }}
+                onSkuSelected={selectSku}
+              />
             </Box>
-          )}
-        </Grid2>
-        <Grid2 xs={6}>
+          </Grid2>
+        )}
+        <Grid2 xs={4}>
           <Box sx={{ textAlign: "center", padding: 0 }}>
-            <h2>Ventas</h2>
+            <VtasPorSkuSemanal sku={skuSelected} />
           </Box>
         </Grid2>
       </Grid2>
