@@ -19,6 +19,7 @@ import { getElektraOrders } from "../services/ElektraOrdersServices";
 import { getElenasOrders } from "../services/ElenasOrdersServices";
 import { getMeliOrders, getMeliVtasPorSku } from "../services/MeliOrdersServices";
 import TableVtasMeli from "../components/features/TableVtasMeli";
+import { getWalmartOrders } from "../services/WalmartOrdersServices";
 
 const socket = io("http://localhost:8000");
 const socket2 = io("http://localhost:8001");
@@ -39,6 +40,7 @@ const Dashboard = () => {
   const [ventasPorSKU, setVentasPorSKU] = useState([]); //ventas por sku
   const [totalVentasAmazon, setTotalVentasAmazon] = useState(0); //total de ventas de amazon
   const [skuSelected, setSkuSelected] = useState(""); //sku seleccionado
+  const [skuSelectedMeli, setSkuSelectedMeli] = useState(""); //sku seleccionado meli
 
   const [ventasElektra, setVentasElektra] = useState([]); //VENTAS
   const [totalPagesElektra, setTotalPagesElektra] = useState(1); //total de paginas
@@ -56,6 +58,12 @@ const Dashboard = () => {
   const [totalVentasMeli, setTotalVentasMeli] = useState(0); //total de ventas de amazon
   const [ventasPorSKUMeli, setVentasPorSKUMeli] = useState([]); //ventas por sku
 
+  const [ventasWalmart, setVentasWalmart] = useState([]); //VENTAS
+  const [totalPagesWalmart, setTotalPagesWalmart] = useState(1); //total de paginas
+  const [totalWalmart, setTotalWalmart] = useState(0); //total de ventas
+  const [totalVentasWalmart, setTotalVentasWalmart] = useState(0); //total de ventas de amazon
+  const [ventasPorSKUWalmart, setVentasPorSKUWalmart] = useState([]); //ventas por sku
+
 
   const [params, setParams] = useState({
     startDate: formatDate(fechaInicial),
@@ -69,6 +77,10 @@ const Dashboard = () => {
 
   const selectSku = (sku) => {
     setSkuSelected(sku);
+  };
+
+  const selectSkuMeli = (sku) => {
+    setSkuSelectedMeli(sku);
   };
 
   const marketPlaces = [
@@ -87,6 +99,7 @@ const Dashboard = () => {
     fetchElenasOrders();
     fetchMeliOrders();
     fetchVentasPorSkuMeli();
+    fetchWalmartOrders();
     //Escuchar mensajes del backend
     socket.on("newOrder", (data) => {
       console.log(data);
@@ -163,12 +176,20 @@ const Dashboard = () => {
       limit,
       page,
     });
-    console.log(params);
-    console.log(data);
+    // console.log(params);
+    // console.log(data);
     setVentasMeli(data.orders);
     setTotalPagesMeli(data.totalPages);
     setTotalMeli(data.total);
     setTotalVentasMeli(data.totalVentas);
+  };
+
+  const fetchWalmartOrders = async () => {
+    const data = await withLoader(getWalmartOrders(params));
+    setVentasWalmart(data.orders);
+    setTotalPagesWalmart(data.totalPages);
+    setTotalWalmart(data.total);
+    setTotalVentasWalmart(data.totalVentas);
   };
 
   const fetchVentasPorSku = async () => {
@@ -314,14 +335,14 @@ const Dashboard = () => {
                 setFechaFinal={setFechaFinal}
                 marketplace={"Mercado libre"}
                 sx={{ height: "100%" }}
-                onSkuSelected={selectSku}
+                onSkuSelectedMeli={selectSkuMeli}
               />
             </Box>
           </Grid2>
         )}
         <Grid2 xs={4}>
           <Box sx={{ textAlign: "center", padding: 0 }}>
-            <VtasPorSkuSemanal sku={skuSelected} />
+            <VtasPorSkuSemanal sku={skuSelectedMeli} />
           </Box>
         </Grid2>
       </Grid2>

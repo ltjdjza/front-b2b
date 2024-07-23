@@ -15,8 +15,8 @@ import IconButton from "@mui/material/IconButton";
 import { formatMoney } from "../../utils/helpers";
 
 const TableVtasMeli = (props) => {
-  console.log(props);
-  const { ventasPorSKUMeli, marketplace, onSkuSelected } = props;//arreglo de ventas por sku
+  //console.log(props);
+  const { ventasPorSKUMeli, marketplace, onSkuSelectedMeli } = props;//arreglo de ventas por sku
   const [sortConfig, setSortConfig] = useState({
     key: "sku",
     direction: "asc",
@@ -154,7 +154,7 @@ const TableVtasMeli = (props) => {
                       component="th"
                       scope="row"
                       onClick={() => {
-                        onSkuSelected(row.sku);
+                        onSkuSelectedMeli(row.sku);
                       }}
                     >
                       {row.sku}
@@ -173,7 +173,7 @@ const TableVtasMeli = (props) => {
                     key={row.sku}
                     sx={{ "&:last-child td, &:last-child th": { border: 0 }, cursor: "pointer" }}
                     onClick={() => {
-                      onSkuSelected(row.sku);
+                      onSkuSelectedMeli(row.sku);
                     }}
                   >
                     <TableCell component="th" scope="row">
@@ -200,7 +200,7 @@ TableVtasMeli.propTypes = {
   marketplace: PropTypes.string,
   fechaInicial: PropTypes.string,
   fechaFinal: PropTypes.string,
-  onSkuSelected: PropTypes.func,
+  onSkuSelectedMeli: PropTypes.func,
 };
 
 export default TableVtasMeli;
